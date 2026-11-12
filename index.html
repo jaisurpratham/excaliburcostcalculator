@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="en"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxNjYyMTg0ODQzMDIwMDAyOTYzOCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzkzY2NkNWYwZDlkZDIxMDZfZTNlM2FlMmRfbXVtYmFpX3JlZGV2ZWxvcG1lbnRfY2FsY3VsYXRvci5odG1sLXVuZGVmaW5lZCJ9LCJleHAiOjE3OTQ0ODUzNjcsImlhdCI6MTc5NDQ4MTc2NywiYWxnIjoiUlMyNTYifQ.gmQwx0_9-WK9eALawAcsioRky_yut_pPI_4Wjb4kO1sxU06Has_EYyGAGYoxFjb3pII0RRu-O0UwTublK1NkRuXJC1kvwsRDJdVHJNe4izzI9rSsJVCNo5pL4_pRw9zZ7lZU-5zMgvD0KEh5NbWE2LtM8v1Jc3KSYO5W0LgIVDuw4efnHryEYlj5KrP0E6ZwiHsX9IGKKAM9X704dIWLzE3kQGg3bsvOTmZeh6dm0pYtnDekMLzJCSn6g4tz5DEv1a4-mcc2mtrkuO-9etyn-hiGW30AsIEysqjMjzQELohN6Qu4UyypE9j5BiM-ZsnpwOZrhPBkySDclpCydtweFQ","c_93ccd5f0d9dd2106_e3e3ae2d_mumbai_redevelopment_calculator.html-undefined")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Redev Costing">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Mumbai Redevelopment Cost per Sq. Ft. Calculator</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.bottom-5{bottom:1.25rem}.right-5{right:1.25rem}.top-0{top:0px}.right-2\.5{right:0.625rem}.top-1\.5{top:0.375rem}.z-30{z-index:30}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-1\.5{margin-top:0.375rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-2\.5{height:0.625rem}.h-60{height:15rem}.h-9{height:2.25rem}.h-full{height:100%}.min-h-screen{min-height:100vh}.w-9{width:2.25rem}.w-full{width:100%}.w-2\.5{width:0.625rem}.w-36{width:9rem}.max-w-7xl{max-width:80rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.border-collapse{border-collapse:collapse}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-slate-100 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(241 245 249 / var(--tw-divide-opacity, 1))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-t-2{border-top-width:2px}.border-amber-300{--tw-border-opacity:1;border-color:rgb(252 211 77 / var(--tw-border-opacity, 1))}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202 / var(--tw-border-opacity, 1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-200\/80{border-color:rgb(226 232 240 / 0.8)}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-transparent{border-color:transparent}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235 / var(--tw-bg-opacity, 1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-amber-500\/20{background-color:rgb(245 158 11 / 0.2)}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255 / var(--tw-bg-opacity, 1))}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-emerald-50{--tw-bg-opacity:1;background-color:rgb(236 253 245 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-200{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.bg-slate-200\/70{background-color:rgb(226 232 240 / 0.7)}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-amber-50\/60{background-color:rgb(255 251 235 / 0.6)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.from-slate-900{--tw-gradient-from:#0f172a var(--tw-gradient-from-position);--tw-gradient-to:rgb(15 23 42 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-slate-800{--tw-gradient-to:#1e293b var(--tw-gradient-to-position)}.p-0\.5{padding:0.125rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.pt-1\.5{padding-top:0.375rem}.pt-3{padding-top:0.75rem}.pl-2{padding-left:0.5rem}.pr-2{padding-right:0.5rem}.pl-3{padding-left:0.75rem}.pr-9{padding-right:2.25rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216 / var(--tw-text-opacity, 1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105 / var(--tw-text-opacity, 1))}.text-emerald-700{--tw-text-opacity:1;color:rgb(4 120 87 / var(--tw-text-opacity, 1))}.text-purple-700{--tw-text-opacity:1;color:rgb(126 34 206 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-red-700{--tw-text-opacity:1;color:rgb(185 28 28 / var(--tw-text-opacity, 1))}.text-red-800{--tw-text-opacity:1;color:rgb(153 27 27 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.hover\:border-red-200:hover{--tw-border-opacity:1;border-color:rgb(254 202 202 / var(--tw-border-opacity, 1))}.hover\:bg-amber-100:hover{--tw-bg-opacity:1;background-color:rgb(254 243 199 / var(--tw-bg-opacity, 1))}.hover\:bg-amber-400:hover{--tw-bg-opacity:1;background-color:rgb(251 191 36 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-400:hover{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.hover\:bg-red-900\/60:hover{background-color:rgb(127 29 29 / 0.6)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-red-50:hover{--tw-bg-opacity:1;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1))}.hover\:text-slate-900:hover{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.hover\:text-red-600:hover{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-amber-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(245 158 11 / var(--tw-ring-opacity, 1))}@media (min-width: 640px){.sm\:col-span-3{grid-column:span 3 / span 3}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}}@media (min-width: 1024px){.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:col-span-7{grid-column:span 7 / span 7}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.lg\:px-8{padding-left:2rem;padding-right:2rem}}</style></head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Header -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 font-bold text-lg shadow-inner">
+          ₹
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight">Mumbai Redevelopment Cost Calculator</h1>
+          <p class="text-xs text-slate-400">Direct-Input Costing Model for Saleable Finished Property (₹ / sq. ft.)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="btnSaveScenario" type="button" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          + Snapshot Scenario
+        </button>
+        <button id="btnExportCsv" type="button" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          Export CSV
+        </button>
+        <button id="btnShareUrl" type="button" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold transition">
+          Share Deal Link
+        </button>
+        <button id="btnDownloadHtml" type="button" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          Download index.html
+        </button>
+        <button id="btnCopySummary" type="button" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold transition">
+          Copy Cost Sheet
+        </button>
+        <button id="btnResetDefaults" type="button" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-red-900/60 text-slate-300 border border-slate-700 transition">
+          Reset
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification -->
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 flex items-center gap-2">
+    <span id="toastText">Saved!</span>
+  </div>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Top KPI Sticky Summary Bar -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <!-- Primary KPI: Cost per Sq Ft of Sale Carpet -->
+      <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-md border border-slate-700">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium uppercase tracking-wider text-amber-400">Breakeven Cost (Carpet)</span>
+          <span class="text-[11px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-medium">Primary Goal</span>
+        </div>
+        <div id="kpiCostPerCarpetSqft" class="text-2xl sm:text-3xl font-bold mt-1.5 tracking-tight">₹21,970 / sq.ft.</div>
+        <div class="text-xs text-slate-300 mt-1 flex items-center justify-between">
+          <span>Net Sale Carpet Area:</span>
+          <span id="kpiNetSaleCarpet" class="font-semibold text-white">49,000 sq.ft.</span>
+        </div>
+      </div>
+
+      <!-- Secondary KPI: Cost per Sq Ft of Saleable (Loaded) Area -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Cost per Saleable Sq.Ft.</span>
+          <span id="kpiLoadingBadge" class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">+35% Loading</span>
+        </div>
+        <div id="kpiCostPerSaleableSqft" class="text-2xl sm:text-3xl font-bold text-slate-900 mt-1.5 tracking-tight">₹16,274 / sq.ft.</div>
+        <div class="text-xs text-slate-500 mt-1 flex items-center justify-between">
+          <span>Total Saleable Area:</span>
+          <span id="kpiNetSaleableArea" class="font-semibold text-slate-800">66,150 sq.ft.</span>
+        </div>
+      </div>
+
+      <!-- Total Project Outlay -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Project Cost</span>
+          <span id="kpiRehabRatioBadge" class="text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">Rehab: 39.5%</span>
+        </div>
+        <div id="kpiTotalProjectCostCr" class="text-2xl sm:text-3xl font-bold text-slate-900 mt-1.5 tracking-tight">₹107.65 Cr</div>
+        <div class="text-xs text-slate-500 mt-1 flex items-center justify-between">
+          <span>Total Buildable Area:</span>
+          <span id="kpiTotalPermissibleArea" class="font-semibold text-slate-800">81,000 sq.ft.</span>
+        </div>
+      </div>
+
+      <!-- Expected Profit & Margin -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Projected Margin</span>
+          <span id="kpiProfitBadge" class="text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">ROI: 24.9%</span>
+        </div>
+        <div id="kpiProfitPerSqft" class="text-2xl sm:text-3xl font-bold mt-1.5 tracking-tight text-emerald-600">₹5,470 / sq.ft.</div>
+        <div class="text-xs text-slate-500 mt-1 flex items-center justify-between">
+          <span>Est. Net Profit:</span>
+          <span id="kpiTotalNetProfitCr" class="font-semibold text-slate-800">₹26.80 Cr</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Warning Alert if Sale Area <= 0 -->
+    <div id="areaWarningBox" class="hidden mb-6 bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-xs sm:text-sm flex items-start gap-3">
+      <span class="font-bold text-red-600 text-base">!</span>
+      <div>
+        <p class="font-semibold">Rehab Area Exceeds or Equals Total Permissible Area</p>
+        <p class="text-red-700 mt-0.5">The existing members' rehab area leaves 0 sq.ft. available for developer sale. Increase the Plot Area, FSI, or Fungible %, or reduce the Rehab Carpet Area to compute a valid per-sq-ft sale cost.</p>
+      </div>
+    </div>
+
+    <!-- Main 12-Column Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Left Column: All Direct User Inputs (7 cols) -->
+      <div class="lg:col-span-7 space-y-5">
+
+        <!-- Section 1: Land, Direct FSI & Area Allocation -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">1. Plot Area, Direct FSI &amp; Area Split</h2>
+              <p class="text-xs text-slate-500">Directly input your plot size, FSI to be consumed, and rehab commitment</p>
+            </div>
+            <span class="text-xs font-semibold text-slate-600 bg-slate-200/70 px-2.5 py-1 rounded-md" id="section1Badge">Sale Carpet: 49,000 sq.ft.</span>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label for="plotAreaSqft" class="block text-xs font-semibold text-slate-700 mb-1">Plot Area (sq. ft.)</label>
+                <input id="plotAreaSqft" type="number" min="0" step="100" value="20000" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block" id="plotAreaSqmHint">≈ 1,858.1 sq. m.</span>
+              </div>
+
+              <div>
+                <label for="baseFsi" class="block text-xs font-semibold text-slate-700 mb-1">Direct FSI Input</label>
+                <input id="baseFsi" type="number" min="0" step="0.05" value="3.00" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block">Base + TDR + Paid FSI</span>
+              </div>
+
+              <div>
+                <label for="fungibleFsiPct" class="block text-xs font-semibold text-slate-700 mb-1">Fungible / Ancillary (%)</label>
+                <input id="fungibleFsiPct" type="number" min="0" max="100" step="1" value="35" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block" id="effectiveFsiHint">Effective FSI: 4.05</span>
+              </div>
+            </div>
+
+            <!-- Rehab Input Mode Switch -->
+            <div class="pt-3 border-t border-slate-100">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <span class="text-xs font-semibold text-slate-700">Rehab Area Calculation Method</span>
+                <div class="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
+                  <button type="button" id="modeRehabDirectBtn" class="px-2.5 py-1 text-xs font-medium rounded-md bg-white text-slate-900 shadow-sm transition">Direct Rehab Area</button>
+                  <button type="button" id="modeRehabMemberBtn" class="px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">From Existing Carpet + Bonus %</button>
+                </div>
+              </div>
+
+              <!-- Direct Rehab Input -->
+              <div id="rehabDirectContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="rehabCarpetDirect" class="block text-xs font-semibold text-slate-700 mb-1">Total Rehab Carpet Area Given to Members (sq. ft.)</label>
+                  <input id="rehabCarpetDirect" type="number" min="0" step="100" value="32000" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                  <label for="saleLoadingPct" class="block text-xs font-semibold text-slate-700 mb-1">Saleable Area Loading on Carpet (%)</label>
+                  <input id="saleLoadingPct" type="number" min="0" max="150" step="1" value="35" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                  <span class="text-[11px] text-slate-400 mt-0.5 block">Set 0% if you sell strictly on RERA Carpet</span>
+                </div>
+              </div>
+
+              <!-- Member-based Rehab Input -->
+              <div id="rehabMemberContainer" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label for="existingCarpetTotal" class="block text-xs font-semibold text-slate-700 mb-1">Existing Total Carpet (sq. ft.)</label>
+                  <input id="existingCarpetTotal" type="number" min="0" step="100" value="24000" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                  <label for="extraAreaOfferPct" class="block text-xs font-semibold text-slate-700 mb-1">Extra Hardship Area Offered (%)</label>
+                  <input id="extraAreaOfferPct" type="number" min="0" max="200" step="1" value="33.33" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                  <label for="saleLoadingPctMember" class="block text-xs font-semibold text-slate-700 mb-1">Sale Loading on Carpet (%)</label>
+                  <input id="saleLoadingPctMember" type="number" min="0" max="150" step="1" value="35" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Area Breakdown Bar -->
+            <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/80 text-xs space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-slate-600">Total Buildable Area (Plot × FSI × (1 + Fungible)): <strong id="summaryTotalBua" class="text-slate-900">81,000 sq.ft.</strong></span>
+                <span class="text-slate-600">Rehab Share: <strong id="summaryRehabArea" class="text-blue-700">32,000 sq.ft.</strong> | Developer Sale Carpet: <strong id="summarySaleCarpet" class="text-emerald-700">49,000 sq.ft.</strong></span>
+              </div>
+              <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden flex">
+                <div id="barRehabPct" class="bg-blue-600 h-full transition-all duration-300" style="width: 39.5062%;"></div>
+                <div id="barSalePct" class="bg-emerald-500 h-full transition-all duration-300" style="width: 60.4938%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Construction Costs -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">2. Construction Costs (Rehab, Sale &amp; Common Areas)</h2>
+              <p class="text-xs text-slate-500">Direct construction rates and Gross Construction multiplier</p>
+            </div>
+            <span class="text-xs font-semibold text-slate-700 bg-slate-200/70 px-2.5 py-1 rounded-md" id="section2Badge">₹45.39 Cr</span>
+          </div>
+
+          <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="rehabConstRate" class="block text-xs font-semibold text-slate-700 mb-1">Rehab Construction Rate (₹ / sq. ft. Carpet)</label>
+              <input id="rehabConstRate" type="number" min="0" step="50" value="4200" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <span class="text-[11px] text-slate-400 mt-0.5 block">Includes civil, finishing &amp; services for rehab</span>
+            </div>
+
+            <div>
+              <label for="saleConstRate" class="block text-xs font-semibold text-slate-700 mb-1">Sale Area Construction Rate (₹ / sq. ft. Carpet)</label>
+              <input id="saleConstRate" type="number" min="0" step="50" value="5500" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <span class="text-[11px] text-slate-400 mt-0.5 block">Includes civil, lobby, facade &amp; specs for sale units</span>
+            </div>
+
+            <div>
+              <label for="constBuaMultiplier" class="block text-xs font-semibold text-slate-700 mb-1">Construction BUA Multiplier on Carpet</label>
+              <input id="constBuaMultiplier" type="number" min="1" max="3" step="0.05" value="1.00" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <span class="text-[11px] text-slate-400 mt-0.5 block">Keep 1.00 if rates above are per Carpet sq.ft. (or e.g. 1.35 if per Built-up)</span>
+            </div>
+
+            <div>
+              <label for="podiumAmenitiesLumpCr" class="block text-xs font-semibold text-slate-700 mb-1">Podium / Basement / Parking / Amenities (₹ Cr)</label>
+              <input id="podiumAmenitiesLumpCr" type="number" min="0" step="0.25" value="5.00" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <span class="text-[11px] text-slate-400 mt-0.5 block">Additional non-FSI civil, car parking towers &amp; club</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Statutory Premiums, FSI Purchase & Approvals -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">3. FSI Premiums, TDR, Approvals &amp; Stamp Duty</h2>
+              <p class="text-xs text-slate-500">Direct inputs for statutory approvals, premiums, and legal costs</p>
+            </div>
+            <span class="text-xs font-semibold text-slate-700 bg-slate-200/70 px-2.5 py-1 rounded-md" id="section3Badge">₹28.00 Cr</span>
+          </div>
+
+          <div class="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="fsiTdrPremiumCr" class="block text-xs font-semibold text-slate-700 mb-1">TDR / Paid FSI / Fungible Premiums (₹ Cr)</label>
+              <input id="fsiTdrPremiumCr" type="number" min="0" step="0.5" value="18.00" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <span class="text-[11px] text-slate-400 mt-0.5 block">Total cost of purchasing TDR, premium FSI &amp; fungible FSI</span>
+            </div>
+
+            <div>
+              <label for="approvalLiaisonCr" class="block text-xs font-semibold text-slate-700 mb-1">Municipal Approvals, IOD/CC, Open Space Deficiency (₹ Cr)</label>
+              <input id="approvalLiaisonCr" type="number" min="0" step="0.25" value="6.50" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <span class="text-[11px] text-slate-400 mt-0.5 block">BMC / MHADA / SRA scrutiny, development &amp; LUC charges</span>
+            </div>
+
+            <div>
+              <label for="stampDutyDaCr" class="block text-xs font-semibold text-slate-700 mb-1">Stamp Duty, Registration &amp; Legal on DA (₹ Cr)</label>
+              <input id="stampDutyDaCr" type="number" min="0" step="0.25" value="3.50" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <span class="text-[11px] text-slate-400 mt-0.5 block">Development Agreement &amp; PAAA stamp duty + legal fees</span>
+            </div>
+
+            <div>
+              <label for="extraStatutoryPerSqft" class="block text-xs font-semibold text-slate-700 mb-1">Additional Statutory Cost per Total BUA (₹ / sq. ft.)</label>
+              <input id="extraStatutoryPerSqft" type="number" min="0" step="50" value="0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <span class="text-[11px] text-slate-400 mt-0.5 block">Optional per-sq-ft statutory rate applied on Total Buildable Area</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Society Member Compensation (Transit Rent, Corpus, Shifting) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">4. Society Member Transit Rent, Corpus &amp; Shifting Costs</h2>
+              <p class="text-xs text-slate-500">Per sq. ft. costing for Transit Rent &amp; Corpus; per member costing for Shifting</p>
+            </div>
+            <span class="text-xs font-semibold text-slate-700 bg-slate-200/70 px-2.5 py-1 rounded-md" id="section4Badge">₹15.15 Cr</span>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label for="memberCompCarpetSqft" class="block text-xs font-semibold text-slate-700 mb-1">Existing Member Carpet Area (sq. ft.)</label>
+                <input id="memberCompCarpetSqft" type="number" min="0" step="100" value="24000" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block">Area basis for Rent &amp; Corpus</span>
+              </div>
+
+              <div>
+                <label for="transitRentPerSqftMonthly" class="block text-xs font-semibold text-slate-700 mb-1">Transit Rent (₹ / sq. ft. / Month)</label>
+                <input id="transitRentPerSqftMonthly" type="number" min="0" step="5" value="90" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block" id="monthlyRentOutflowHint">Monthly outflow: ₹21.60 Lakhs/mo</span>
+              </div>
+
+              <div>
+                <label for="transitMonths" class="block text-xs font-semibold text-slate-700 mb-1">Rent Duration (Months)</label>
+                <input id="transitMonths" type="number" min="0" step="1" value="36" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block">Total months of transit rent</span>
+              </div>
+
+              <div>
+                <label for="rentEscalationPct" class="block text-xs font-semibold text-slate-700 mb-1">Overall Rent Escalation Buffer (%)</label>
+                <input id="rentEscalationPct" type="number" min="0" max="100" step="1" value="10" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block">Effective increase over tenure</span>
+              </div>
+
+              <div>
+                <label for="corpusPerSqft" class="block text-xs font-semibold text-slate-700 mb-1">Corpus / Hardship Fund (₹ / sq. ft.)</label>
+                <input id="corpusPerSqft" type="number" min="0" step="100" value="2500" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block">One-time corpus per sq. ft.</span>
+              </div>
+
+              <div>
+                <label for="numMembers" class="block text-xs font-semibold text-slate-700 mb-1">No. of Existing Members</label>
+                <input id="numMembers" type="number" min="0" step="1" value="40" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block">Used for shifting charges below</span>
+              </div>
+
+              <div class="sm:col-span-3">
+                <label for="shiftingPerMemberINR" class="block text-xs font-semibold text-slate-700 mb-1">Shifting, Transport &amp; Brokerage Charges per Member (₹ / Member)</label>
+                <input id="shiftingPerMemberINR" type="number" min="0" step="5000" value="150000" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block" id="shiftingPerMemberHint">To-and-fro shifting + brokerage per member (₹1.50 Lakhs / member)</span>
+              </div>
+            </div>
+
+            <!-- Live Section 4 Verification Breakdown -->
+            <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80 text-xs space-y-1.5">
+              <div class="font-semibold text-slate-700 mb-1">Section 4 Calculation Cross-Check:</div>
+              <div class="flex flex-wrap items-center justify-between gap-2 text-slate-600">
+                <span id="sec4RentFormulaText">1. Transit Rent (24,000 sq.ft. × ₹90/sq.ft. × 36 mos × 1.10):</span>
+                <strong id="sec4RentTotalCr" class="text-slate-900">₹8.55 Cr</strong>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-2 text-slate-600">
+                <span id="sec4CorpusFormulaText">2. Corpus Fund (24,000 sq.ft. × ₹2,500/sq.ft.):</span>
+                <strong id="sec4CorpusTotalCr" class="text-slate-900">₹6.00 Cr</strong>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-2 text-slate-600">
+                <span id="sec4ShiftingFormulaText">3. Shifting Charges (40 members × ₹1,50,000/member):</span>
+                <strong id="sec4ShiftingTotalCr" class="text-slate-900">₹0.60 Cr</strong>
+              </div>
+              <div class="pt-1.5 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 font-semibold text-slate-800">
+                <span>Total Member Compensation (Impact on Sale Carpet Area):</span>
+                <span id="sec4ImpactPerSqft" class="text-purple-700">₹15.15 Cr (₹3,093 / Sale Carpet sq.ft.)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: Consultants, Marketing, Finance & Custom Cost Factors -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">5. Consultants, Marketing, Finance &amp; Custom Inputs</h2>
+              <p class="text-xs text-slate-500">Professional fees, sales overhead, interest cost, and custom line items</p>
+            </div>
+            <span class="text-xs font-semibold text-slate-700 bg-slate-200/70 px-2.5 py-1 rounded-md" id="section5Badge">₹19.11 Cr</span>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="consultantFeePct" class="block text-xs font-semibold text-slate-700 mb-1">Architect, RCC, PMC &amp; Consultants (% of Const. Cost)</label>
+                <input id="consultantFeePct" type="number" min="0" max="50" step="0.5" value="6.0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              </div>
+
+              <div>
+                <label for="marketingOverheadsCr" class="block text-xs font-semibold text-slate-700 mb-1">Marketing, Sales, Admin &amp; Overheads (₹ Cr)</label>
+                <input id="marketingOverheadsCr" type="number" min="0" step="0.25" value="4.50" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              </div>
+
+              <div>
+                <label for="financeCostCr" class="block text-xs font-semibold text-slate-700 mb-1">Direct Interest / Finance Cost Outlay (₹ Cr)</label>
+                <input id="financeCostCr" type="number" min="0" step="0.5" value="8.00" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block">Total interest &amp; processing cost over project cycle</span>
+              </div>
+
+              <div>
+                <label for="contingencyPct" class="block text-xs font-semibold text-slate-700 mb-1">Contingency &amp; Escalation Reserve (% of Above Costs)</label>
+                <input id="contingencyPct" type="number" min="0" max="50" step="0.5" value="3.0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <span class="text-[11px] text-slate-400 mt-0.5 block">Buffer for cost overruns</span>
+              </div>
+            </div>
+
+            <!-- Custom User-Added Cost Factors -->
+            <div class="pt-3 border-t border-slate-100">
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <h3 class="text-xs font-bold text-slate-800">Custom Cost Factors (Add Any Project-Specific Cost)</h3>
+                  <p class="text-[11px] text-slate-500">Add corpus top-ups, commercial tenant buyouts, infrastructure charges, etc.</p>
+                </div>
+                <button type="button" id="btnAddCustomFactor" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 transition">
+                  + Add Custom Factor
+                </button>
+              </div>
+
+              <div id="customFactorsList" class="space-y-2"><div class="flex items-center gap-2"><input type="text" placeholder="Custom cost name" class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"><div class="relative w-36"><input type="number" min="0" step="0.1" class="w-full rounded-lg border border-slate-300 pl-3 pr-9 py-1.5 text-xs font-medium text-right focus:outline-none focus:ring-2 focus:ring-amber-500"><span class="absolute right-2.5 top-1.5 text-[11px] text-slate-400 pointer-events-none">Cr</span></div><button type="button" class="px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-200 transition">✕</button></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Cost per Sq.Ft. Breakdown, Margin Simulator & Sensitivity (5 cols) -->
+      <div class="lg:col-span-5 space-y-5">
+
+        <!-- Target Selling Price & Margin Simulator -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold">Selling Price &amp; Margin Simulator</h2>
+              <p class="text-xs text-slate-400">Test your target selling rate against your calculated cost per sq.ft.</p>
+            </div>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+              <div>
+                <label for="targetSellPriceCarpet" class="block text-xs font-semibold text-slate-700 mb-1">Expected Selling Rate (₹ / sq.ft. Carpet)</label>
+                <input id="targetSellPriceCarpet" type="number" min="0" step="250" value="28000" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+              </div>
+              <div>
+                <label for="gstAndBrokerageOnSalePct" class="block text-xs font-semibold text-slate-700 mb-1">Channel Partner / Sale Deduction (%)</label>
+                <input id="gstAndBrokerageOnSalePct" type="number" min="0" max="30" step="0.25" value="2.0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+              <div>
+                <span class="text-slate-500 block">Net Realization / Carpet sq.ft.</span>
+                <span id="simNetRealizationSqft" class="text-sm font-bold text-slate-900">₹27,440 / sq.ft.</span>
+              </div>
+              <div>
+                <span class="text-slate-500 block">Equivalent Rate / Saleable sq.ft.</span>
+                <span id="simEquivalentSaleableRate" class="text-sm font-bold text-slate-900">₹20,741 / sq.ft.</span>
+              </div>
+              <div>
+                <span class="text-slate-500 block">Gross Sale Revenue</span>
+                <span id="simGrossRevenueCr" class="text-sm font-bold text-slate-900">₹137.20 Cr</span>
+              </div>
+              <div>
+                <span class="text-slate-500 block">Net Developer Profit</span>
+                <span id="simNetProfitCr" class="text-sm font-bold text-emerald-600">₹26.80 Cr</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Per Sq. Ft. Cost Sheet Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">Per Sq. Ft. Cost Sheet Breakdown</h2>
+              <p class="text-xs text-slate-500">How each cost bucket contributes to every sq. ft. you sell</p>
+            </div>
+          </div>
+
+          <div class="p-4">
+            <div class="relative h-60 mb-4">
+              <canvas id="costBreakdownChart" width="1702" height="480" style="display: block; box-sizing: border-box; height: 240px; width: 851px;"></canvas>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-slate-200 text-slate-500 uppercase text-[11px]">
+                    <th class="py-2 pr-2 font-semibold">Cost Component</th>
+                    <th class="py-2 px-2 text-right font-semibold">Total (₹ Cr)</th>
+                    <th class="py-2 px-2 text-right font-semibold">₹ / Carpet Sq.Ft.</th>
+                    <th class="py-2 px-2 text-right font-semibold">₹ / Saleable</th>
+                    <th class="py-2 pl-2 text-right font-semibold">Share</th>
+                  </tr>
+                </thead>
+                <tbody id="costBreakdownTableBody" class="divide-y divide-slate-100 text-slate-700"><tr>
+          <td class="py-2 pr-2 flex items-center gap-2 font-medium text-slate-800">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #3b82f6"></span>
+            <span>Rehab Construction</span>
+          </td>
+          <td class="py-2 px-2 text-right">13.44</td>
+          <td class="py-2 px-2 text-right font-semibold">₹2,743</td>
+          <td class="py-2 px-2 text-right text-slate-500">₹2,032</td>
+          <td class="py-2 pl-2 text-right text-slate-500">12.5%</td>
+        </tr><tr>
+          <td class="py-2 pr-2 flex items-center gap-2 font-medium text-slate-800">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #0ea5e9"></span>
+            <span>Sale &amp; Podium Construction</span>
+          </td>
+          <td class="py-2 px-2 text-right">31.95</td>
+          <td class="py-2 px-2 text-right font-semibold">₹6,520</td>
+          <td class="py-2 px-2 text-right text-slate-500">₹4,830</td>
+          <td class="py-2 pl-2 text-right text-slate-500">29.7%</td>
+        </tr><tr>
+          <td class="py-2 pr-2 flex items-center gap-2 font-medium text-slate-800">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #f59e0b"></span>
+            <span>FSI, TDR &amp; Approvals</span>
+          </td>
+          <td class="py-2 px-2 text-right">28.00</td>
+          <td class="py-2 px-2 text-right font-semibold">₹5,714</td>
+          <td class="py-2 px-2 text-right text-slate-500">₹4,233</td>
+          <td class="py-2 pl-2 text-right text-slate-500">26.0%</td>
+        </tr><tr>
+          <td class="py-2 pr-2 flex items-center gap-2 font-medium text-slate-800">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #8b5cf6"></span>
+            <span>Member Rent &amp; Corpus</span>
+          </td>
+          <td class="py-2 px-2 text-right">15.15</td>
+          <td class="py-2 px-2 text-right font-semibold">₹3,093</td>
+          <td class="py-2 px-2 text-right text-slate-500">₹2,291</td>
+          <td class="py-2 pl-2 text-right text-slate-500">14.1%</td>
+        </tr><tr>
+          <td class="py-2 pr-2 flex items-center gap-2 font-medium text-slate-800">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #10b981"></span>
+            <span>Consultants &amp; Marketing</span>
+          </td>
+          <td class="py-2 px-2 text-right">7.22</td>
+          <td class="py-2 px-2 text-right font-semibold">₹1,474</td>
+          <td class="py-2 px-2 text-right text-slate-500">₹1,092</td>
+          <td class="py-2 pl-2 text-right text-slate-500">6.7%</td>
+        </tr><tr>
+          <td class="py-2 pr-2 flex items-center gap-2 font-medium text-slate-800">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #ef4444"></span>
+            <span>Finance / Interest Cost</span>
+          </td>
+          <td class="py-2 px-2 text-right">8.00</td>
+          <td class="py-2 px-2 text-right font-semibold">₹1,633</td>
+          <td class="py-2 px-2 text-right text-slate-500">₹1,209</td>
+          <td class="py-2 pl-2 text-right text-slate-500">7.4%</td>
+        </tr><tr>
+          <td class="py-2 pr-2 flex items-center gap-2 font-medium text-slate-800">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: #64748b"></span>
+            <span>Custom &amp; Contingency</span>
+          </td>
+          <td class="py-2 px-2 text-right">3.89</td>
+          <td class="py-2 px-2 text-right font-semibold">₹793</td>
+          <td class="py-2 px-2 text-right text-slate-500">₹587</td>
+          <td class="py-2 pl-2 text-right text-slate-500">3.6%</td>
+        </tr></tbody>
+                <tfoot>
+                  <tr class="border-t-2 border-slate-300 font-bold text-slate-900 bg-slate-50">
+                    <td class="py-2.5 pr-2">Total Cost of Sale Property</td>
+                    <td id="footTotalCr" class="py-2.5 px-2 text-right">₹107.65 Cr</td>
+                    <td id="footTotalCarpetSqft" class="py-2.5 px-2 text-right text-amber-700">₹21,970</td>
+                    <td id="footTotalSaleableSqft" class="py-2.5 px-2 text-right">₹16,274</td>
+                    <td class="py-2.5 pl-2 text-right">100%</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- FSI vs Construction Rate Sensitivity Matrix -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200">
+            <h2 class="text-sm font-bold text-slate-900">What-If Sensitivity: Direct FSI vs. Sale Construction Rate</h2>
+            <p class="text-xs text-slate-500">Resulting Cost per Sale Carpet Sq. Ft. (₹ / sq.ft.) across FSI &amp; construction variations</p>
+          </div>
+          <div class="p-4 overflow-x-auto custom-scrollbar">
+            <table class="w-full text-center border-collapse text-xs" id="sensitivityTable"><thead><tr class="border-b border-slate-200 text-slate-500 text-[11px] uppercase">
+        <th class="py-2 px-2 text-left">Direct FSI \ Sale Const.</th><th class="py-2 px-2 text-right">₹5,000/sq.ft.</th><th class="py-2 px-2 text-right">₹5,500/sq.ft.</th><th class="py-2 px-2 text-right">₹6,000/sq.ft.</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="">
+          <td class="py-2 px-2 text-left font-semibold text-slate-800">FSI 2.50</td><td class="py-2 px-2 text-right text-slate-700">₹27,495</td><td class="py-2 px-2 text-right text-slate-700">₹28,041</td><td class="py-2 px-2 text-right text-slate-700">₹28,587</td></tr><tr class="">
+          <td class="py-2 px-2 text-left font-semibold text-slate-800">FSI 2.75</td><td class="py-2 px-2 text-right text-slate-700">₹23,975</td><td class="py-2 px-2 text-right text-slate-700">₹24,521</td><td class="py-2 px-2 text-right text-slate-700">₹25,066</td></tr><tr class="bg-amber-50/60 font-semibold">
+          <td class="py-2 px-2 text-left font-semibold text-slate-800">FSI 3.00</td><td class="py-2 px-2 text-right text-slate-700">₹21,424</td><td class="py-2 px-2 text-right text-amber-700 font-bold underline">₹21,970</td><td class="py-2 px-2 text-right text-slate-700">₹22,516</td></tr><tr class="">
+          <td class="py-2 px-2 text-left font-semibold text-slate-800">FSI 3.25</td><td class="py-2 px-2 text-right text-slate-700">₹19,491</td><td class="py-2 px-2 text-right text-slate-700">₹20,037</td><td class="py-2 px-2 text-right text-slate-700">₹20,583</td></tr><tr class="">
+          <td class="py-2 px-2 text-left font-semibold text-slate-800">FSI 3.50</td><td class="py-2 px-2 text-right text-slate-700">₹17,976</td><td class="py-2 px-2 text-right text-slate-700">₹18,521</td><td class="py-2 px-2 text-right text-slate-700">₹19,067</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- Saved Scenarios Comparison -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">Saved Scenarios Comparison</h2>
+              <p class="text-xs text-slate-500">Click "+ Snapshot Scenario" at the top to compare multiple project structures</p>
+            </div>
+            <button type="button" id="btnClearScenarios" class="text-xs text-slate-500 hover:text-red-600 font-medium">Clear All</button>
+          </div>
+          <div class="p-4 overflow-x-auto custom-scrollbar">
+            <div id="scenariosEmptyState" class="text-xs text-slate-400 text-center py-3">
+              No snapshots saved yet. Click "+ Snapshot Scenario" to record current parameters.
+            </div>
+            <table id="scenariosTable" class="hidden w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-500 uppercase text-[11px]">
+                  <th class="py-2 pr-2">Scenario</th>
+                  <th class="py-2 px-2 text-right">FSI (+Fung.)</th>
+                  <th class="py-2 px-2 text-right">Sale Carpet</th>
+                  <th class="py-2 px-2 text-right">Total Cost</th>
+                  <th class="py-2 pl-2 text-right">₹ / Carpet Sq.Ft.</th>
+                </tr>
+              </thead>
+              <tbody id="scenariosTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Default Application State
+    const DEFAULT_STATE = {
+      plotAreaSqft: 20000,
+      baseFsi: 3.00,
+      fungibleFsiPct: 35,
+      rehabMode: 'direct', // 'direct' or 'member'
+      rehabCarpetDirect: 32000,
+      existingCarpetTotal: 24000,
+      extraAreaOfferPct: 33.33,
+      saleLoadingPct: 35,
+      rehabConstRate: 4200,
+      saleConstRate: 5500,
+      constBuaMultiplier: 1.00,
+      podiumAmenitiesLumpCr: 5.00,
+      fsiTdrPremiumCr: 18.00,
+      approvalLiaisonCr: 6.50,
+      stampDutyDaCr: 3.50,
+      extraStatutoryPerSqft: 0,
+      memberCompCarpetSqft: 24000,
+      transitRentPerSqftMonthly: 90,
+      transitMonths: 36,
+      rentEscalationPct: 10,
+      corpusPerSqft: 2500,
+      numMembers: 40,
+      shiftingPerMemberINR: 150000,
+      consultantFeePct: 6.0,
+      marketingOverheadsCr: 4.50,
+      financeCostCr: 8.00,
+      contingencyPct: 3.0,
+      targetSellPriceCarpet: 28000,
+      gstAndBrokerageOnSalePct: 2.0,
+      customFactors: [
+        { id: 'cf_1', name: 'Society Solar & Green Infrastructure Fund', amountCr: 0.75 }
+      ],
+      scenarios: []
+    };
+
+    let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    let costChart = null;
+
+    // Formatting Helpers
+    function formatINR(num) {
+      if (!isFinite(num) || isNaN(num)) return '₹0';
+      return '₹' + Math.round(num).toLocaleString('en-IN');
+    }
+
+    function formatNumber(num) {
+      if (!isFinite(num) || isNaN(num)) return '0';
+      return Math.round(num).toLocaleString('en-IN');
+    }
+
+    function formatCr(numCr) {
+      if (!isFinite(numCr) || isNaN(numCr)) return '₹0.00 Cr';
+      return '₹' + Number(numCr).toFixed(2) + ' Cr';
+    }
+
+    function showToast(msg) {
+      const banner = document.getElementById('toastBanner');
+      const text = document.getElementById('toastText');
+      text.textContent = msg;
+      banner.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 2600);
+    }
+
+    // Core Mathematical Engine
+    function computeMetrics(s) {
+      const plotArea = Math.max(0, Number(s.plotAreaSqft) || 0);
+      const baseFsi = Math.max(0, Number(s.baseFsi) || 0);
+      const fungiblePct = Math.max(0, Number(s.fungibleFsiPct) || 0);
+      const effectiveFsi = baseFsi * (1 + fungiblePct / 100);
+      const totalBuildableArea = plotArea * effectiveFsi;
+
+      let rehabCarpet = 0;
+      if (s.rehabMode === 'direct') {
+        rehabCarpet = Math.max(0, Number(s.rehabCarpetDirect) || 0);
+      } else {
+        const existing = Math.max(0, Number(s.existingCarpetTotal) || 0);
+        const bonusPct = Math.max(0, Number(s.extraAreaOfferPct) || 0);
+        rehabCarpet = existing * (1 + bonusPct / 100);
+      }
+
+      const netSaleCarpet = Math.max(0, totalBuildableArea - rehabCarpet);
+      const loadingPct = Math.max(0, Number(s.saleLoadingPct) || 0);
+      const netSaleableArea = netSaleCarpet * (1 + loadingPct / 100);
+
+      // 1. Construction Costs (in Cr; 1 Cr = 1,00,00,000)
+      const mult = Math.max(0, Number(s.constBuaMultiplier) || 1);
+      const rehabConstCr = (rehabCarpet * mult * (Number(s.rehabConstRate) || 0)) / 10000000;
+      const saleConstCr = (netSaleCarpet * mult * (Number(s.saleConstRate) || 0)) / 10000000;
+      const podiumCr = Math.max(0, Number(s.podiumAmenitiesLumpCr) || 0);
+      const totalConstructionCr = rehabConstCr + saleConstCr + podiumCr;
+
+      // 2. Statutory, FSI & Approval Costs (in Cr)
+      const fsiTdrCr = Math.max(0, Number(s.fsiTdrPremiumCr) || 0);
+      const approvalCr = Math.max(0, Number(s.approvalLiaisonCr) || 0);
+      const stampDutyCr = Math.max(0, Number(s.stampDutyDaCr) || 0);
+      const extraStatCr = (totalBuildableArea * (Number(s.extraStatutoryPerSqft) || 0)) / 10000000;
+      const totalStatutoryCr = fsiTdrCr + approvalCr + stampDutyCr + extraStatCr;
+
+      // 3. Member Compensation Costs (in Cr; 1 Cr = 1,00,00,000)
+      const memberCompAreaSqft = Math.max(0, Number(s.memberCompCarpetSqft) || 0);
+      const rentPerSqftMonthly = Math.max(0, Number(s.transitRentPerSqftMonthly) || 0);
+      const months = Math.max(0, Number(s.transitMonths) || 0);
+      const rentEscPct = Math.max(0, Number(s.rentEscalationPct) || 0);
+      const monthlyRentTotalINR = memberCompAreaSqft * rentPerSqftMonthly;
+      const totalTransitRentINR = monthlyRentTotalINR * months * (1 + rentEscPct / 100);
+      const totalTransitRentCr = totalTransitRentINR / 10000000;
+
+      const corpusRatePerSqft = Math.max(0, Number(s.corpusPerSqft) || 0);
+      const totalCorpusINR = memberCompAreaSqft * corpusRatePerSqft;
+      const totalCorpusCr = totalCorpusINR / 10000000;
+
+      const members = Math.max(0, Number(s.numMembers) || 0);
+      const shiftingPerMemberINR = Math.max(0, Number(s.shiftingPerMemberINR) || 0);
+      const totalShiftingINR = members * shiftingPerMemberINR;
+      const totalShiftingCr = totalShiftingINR / 10000000;
+
+      const totalMemberCompCr = totalTransitRentCr + totalCorpusCr + totalShiftingCr;
+
+      // 4. Consultants, Marketing, Finance & Custom Costs (in Cr)
+      const consultantCr = totalConstructionCr * (Math.max(0, Number(s.consultantFeePct) || 0) / 100);
+      const marketingCr = Math.max(0, Number(s.marketingOverheadsCr) || 0);
+      const financeCr = Math.max(0, Number(s.financeCostCr) || 0);
+      const customCr = (s.customFactors || []).reduce((acc, item) => acc + (Math.max(0, Number(item.amountCr) || 0)), 0);
+
+      const subTotalBeforeContingencyCr = totalConstructionCr + totalStatutoryCr + totalMemberCompCr + consultantCr + marketingCr + financeCr + customCr;
+      const contingencyCr = subTotalBeforeContingencyCr * (Math.max(0, Number(s.contingencyPct) || 0) / 100);
+
+      const totalProjectCostCr = subTotalBeforeContingencyCr + contingencyCr;
+      const totalProjectCostINR = totalProjectCostCr * 10000000;
+
+      const costPerCarpetSqft = netSaleCarpet > 0 ? totalProjectCostINR / netSaleCarpet : 0;
+      const costPerSaleableSqft = netSaleableArea > 0 ? totalProjectCostINR / netSaleableArea : 0;
+
+      // Margin Simulator
+      const sellRateCarpet = Math.max(0, Number(s.targetSellPriceCarpet) || 0);
+      const deductionPct = Math.max(0, Number(s.gstAndBrokerageOnSalePct) || 0);
+      const netRealizationCarpetSqft = sellRateCarpet * (1 - deductionPct / 100);
+      const equivalentSaleableRate = (1 + loadingPct / 100) > 0 ? sellRateCarpet / (1 + loadingPct / 100) : 0;
+
+      const grossRevenueCr = (netSaleCarpet * sellRateCarpet) / 10000000;
+      const netRevenueCr = (netSaleCarpet * netRealizationCarpetSqft) / 10000000;
+      const netProfitCr = netRevenueCr - totalProjectCostCr;
+      const profitPerCarpetSqft = netSaleCarpet > 0 ? netRealizationCarpetSqft - costPerCarpetSqft : 0;
+      const roiPct = totalProjectCostCr > 0 ? (netProfitCr / totalProjectCostCr) * 100 : 0;
+
+      const breakdown = [
+        { label: 'Rehab Construction', cr: rehabConstCr, color: '#3b82f6' },
+        { label: 'Sale & Podium Construction', cr: saleConstCr + podiumCr, color: '#0ea5e9' },
+        { label: 'FSI, TDR & Approvals', cr: totalStatutoryCr, color: '#f59e0b' },
+        { label: 'Member Rent & Corpus', cr: totalMemberCompCr, color: '#8b5cf6' },
+        { label: 'Consultants & Marketing', cr: consultantCr + marketingCr, color: '#10b981' },
+        { label: 'Finance / Interest Cost', cr: financeCr, color: '#ef4444' },
+        { label: 'Custom & Contingency', cr: customCr + contingencyCr, color: '#64748b' }
+      ];
+
+      return {
+        plotArea,
+        effectiveFsi,
+        totalBuildableArea,
+        rehabCarpet,
+        netSaleCarpet,
+        loadingPct,
+        netSaleableArea,
+        rehabConstCr,
+        saleConstCr,
+        podiumCr,
+        totalConstructionCr,
+        totalStatutoryCr,
+        memberCompAreaSqft,
+        rentPerSqftMonthly,
+        months,
+        rentEscPct,
+        monthlyRentTotalINR,
+        totalTransitRentCr,
+        corpusRatePerSqft,
+        totalCorpusCr,
+        members,
+        shiftingPerMemberINR,
+        totalShiftingCr,
+        totalMemberCompCr,
+        consultantCr,
+        marketingCr,
+        financeCr,
+        customCr,
+        contingencyCr,
+        totalProjectCostCr,
+        costPerCarpetSqft,
+        costPerSaleableSqft,
+        netRealizationCarpetSqft,
+        equivalentSaleableRate,
+        grossRevenueCr,
+        netProfitCr,
+        profitPerCarpetSqft,
+        roiPct,
+        breakdown
+      };
+    }
+
+    // Render Custom Cost Factors
+    function renderCustomFactors() {
+      const container = document.getElementById('customFactorsList');
+      container.innerHTML = '';
+
+      if (!state.customFactors || state.customFactors.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'text-xs text-slate-400 italic';
+        empty.textContent = 'No custom cost factors added.';
+        container.appendChild(empty);
+        return;
+      }
+
+      state.customFactors.forEach((factor) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2';
+
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.value = factor.name;
+        nameInput.placeholder = 'Custom cost name';
+        nameInput.className = 'flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500';
+        nameInput.addEventListener('input', (e) => {
+          factor.name = e.target.value;
+          updateUI();
+        });
+
+        const amountWrapper = document.createElement('div');
+        amountWrapper.className = 'relative w-36';
+        const amountInput = document.createElement('input');
+        amountInput.type = 'number';
+        amountInput.min = '0';
+        amountInput.step = '0.1';
+        amountInput.value = factor.amountCr;
+        amountInput.className = 'w-full rounded-lg border border-slate-300 pl-3 pr-9 py-1.5 text-xs font-medium text-right focus:outline-none focus:ring-2 focus:ring-amber-500';
+        amountInput.addEventListener('input', (e) => {
+          factor.amountCr = parseFloat(e.target.value) || 0;
+          updateUI();
+        });
+        const unitSpan = document.createElement('span');
+        unitSpan.className = 'absolute right-2.5 top-1.5 text-[11px] text-slate-400 pointer-events-none';
+        unitSpan.textContent = 'Cr';
+        amountWrapper.appendChild(amountInput);
+        amountWrapper.appendChild(unitSpan);
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-200 transition';
+        delBtn.textContent = '✕';
+        delBtn.addEventListener('click', () => {
+          state.customFactors = state.customFactors.filter((f) => f.id !== factor.id);
+          renderCustomFactors();
+          updateUI();
+        });
+
+        row.appendChild(nameInput);
+        row.appendChild(amountWrapper);
+        row.appendChild(delBtn);
+        container.appendChild(row);
+      });
+    }
+
+    // Render Sensitivity Table
+    function renderSensitivityTable(m) {
+      const table = document.getElementById('sensitivityTable');
+      const baseFsi = Number(state.baseFsi) || 3.0;
+      const baseSaleRate = Number(state.saleConstRate) || 5500;
+
+      const fsiSteps = [
+        Math.max(0.5, +(baseFsi - 0.5).toFixed(2)),
+        Math.max(0.5, +(baseFsi - 0.25).toFixed(2)),
+        +baseFsi.toFixed(2),
+        +(baseFsi + 0.25).toFixed(2),
+        +(baseFsi + 0.5).toFixed(2)
+      ];
+
+      const rateSteps = [
+        Math.max(1000, baseSaleRate - 500),
+         baseSaleRate,
+        baseSaleRate + 500
+      ];
+
+      let html = `<thead><tr class="border-b border-slate-200 text-slate-500 text-[11px] uppercase">
+        <th class="py-2 px-2 text-left">Direct FSI \\ Sale Const.</th>`;
+      rateSteps.forEach((r) => {
+        html += `<th class="py-2 px-2 text-right">₹${r.toLocaleString('en-IN')}/sq.ft.</th>`;
+      });
+      html += `</tr></thead><tbody class="divide-y divide-slate-100">`;
+
+      fsiSteps.forEach((f) => {
+        const isCurrentFsi = Math.abs(f - baseFsi) < 0.001;
+        html += `<tr class="${isCurrentFsi ? 'bg-amber-50/60 font-semibold' : ''}">
+          <td class="py-2 px-2 text-left font-semibold text-slate-800">FSI ${f.toFixed(2)}</td>`;
+        rateSteps.forEach((r) => {
+          const tempState = Object.assign({}, state, { baseFsi: f, saleConstRate: r });
+          const res = computeMetrics(tempState);
+          const isSelected = isCurrentFsi && Math.abs(r - baseSaleRate) < 1;
+          const cellVal = res.netSaleCarpet > 0 ? formatINR(res.costPerCarpetSqft) : 'N/A';
+          html += `<td class="py-2 px-2 text-right ${isSelected ? 'text-amber-700 font-bold underline' : 'text-slate-700'}">${cellVal}</td>`;
+        });
+        html += `</tr>`;
+      });
+
+      html += `</tbody>`;
+      table.innerHTML = html;
+    }
+
+    // Render Saved Scenarios
+    function renderScenarios() {
+      const emptyEl = document.getElementById('scenariosEmptyState');
+      const tableEl = document.getElementById('scenariosTable');
+      const tbody = document.getElementById('scenariosTableBody');
+
+      if (!state.scenarios || state.scenarios.length === 0) {
+        emptyEl.classList.remove('hidden');
+        tableEl.classList.add('hidden');
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+      tableEl.classList.remove('hidden');
+      tbody.innerHTML = '';
+
+      state.scenarios.forEach((sc) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="py-2 pr-2 font-semibold text-slate-800">${sc.name}</td>
+          <td class="py-2 px-2 text-right text-slate-600">${sc.effectiveFsi.toFixed(2)}</td>
+          <td class="py-2 px-2 text-right text-slate-600">${formatNumber(sc.netSaleCarpet)} sq.ft.</td>
+          <td class="py-2 px-2 text-right text-slate-600">${formatCr(sc.totalProjectCostCr)}</td>
+          <td class="py-2 pl-2 text-right font-bold text-amber-700">${formatINR(sc.costPerCarpetSqft)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Update Chart & All Readouts
+    function updateUI() {
+      const m = computeMetrics(state);
+
+      // Top KPIs
+      document.getElementById('kpiCostPerCarpetSqft').textContent = m.netSaleCarpet > 0 ? `${formatINR(m.costPerCarpetSqft)} / sq.ft.` : 'N/A';
+      document.getElementById('kpiNetSaleCarpet').textContent = `${formatNumber(m.netSaleCarpet)} sq.ft.`;
+
+      document.getElementById('kpiLoadingBadge').textContent = `+${m.loadingPct}% Loading`;
+      document.getElementById('kpiCostPerSaleableSqft').textContent = m.netSaleableArea > 0 ? `${formatINR(m.costPerSaleableSqft)} / sq.ft.` : 'N/A';
+      document.getElementById('kpiNetSaleableArea').textContent = `${formatNumber(m.netSaleableArea)} sq.ft.`;
+
+      const rehabSharePct = m.totalBuildableArea > 0 ? Math.min(100, (m.rehabCarpet / m.totalBuildableArea) * 100) : 0;
+      document.getElementById('kpiRehabRatioBadge').textContent = `Rehab: ${rehabSharePct.toFixed(1)}%`;
+      document.getElementById('kpiTotalProjectCostCr').textContent = formatCr(m.totalProjectCostCr);
+      document.getElementById('kpiTotalPermissibleArea').textContent = `${formatNumber(m.totalBuildableArea)} sq.ft.`;
+
+      const profitEl = document.getElementById('kpiProfitPerSqft');
+      profitEl.textContent = m.netSaleCarpet > 0 ? `${formatINR(m.profitPerCarpetSqft)} / sq.ft.` : 'N/A';
+      profitEl.className = `text-2xl sm:text-3xl font-bold mt-1.5 tracking-tight ${m.profitPerCarpetSqft >= 0 ? 'text-emerald-600' : 'text-red-600'}`;
+      document.getElementById('kpiProfitBadge').textContent = `ROI: ${m.roiPct.toFixed(1)}%`;
+      document.getElementById('kpiTotalNetProfitCr').textContent = formatCr(m.netProfitCr);
+
+      // Warning Box
+      const warnBox = document.getElementById('areaWarningBox');
+      if (m.netSaleCarpet <= 0) {
+        warnBox.classList.remove('hidden');
+      } else {
+        warnBox.classList.add('hidden');
+      }
+
+      // Section Hints & Badges
+      const sqm = m.plotArea * 0.092903;
+      document.getElementById('plotAreaSqmHint').textContent = `≈ ${sqm.toLocaleString('en-IN', { maximumFractionDigits: 1 })} sq. m.`;
+      document.getElementById('effectiveFsiHint').textContent = `Effective FSI: ${m.effectiveFsi.toFixed(2)}`;
+      document.getElementById('section1Badge').textContent = `Sale Carpet: ${formatNumber(m.netSaleCarpet)} sq.ft.`;
+      document.getElementById('summaryTotalBua').textContent = `${formatNumber(m.totalBuildableArea)} sq.ft.`;
+      document.getElementById('summaryRehabArea').textContent = `${formatNumber(m.rehabCarpet)} sq.ft.`;
+      document.getElementById('summarySaleCarpet').textContent = `${formatNumber(m.netSaleCarpet)} sq.ft.`;
+
+      const saleSharePct = Math.max(0, 100 - rehabSharePct);
+      document.getElementById('barRehabPct').style.width = `${rehabSharePct}%`;
+      document.getElementById('barSalePct').style.width = `${saleSharePct}%`;
+
+      document.getElementById('section2Badge').textContent = formatCr(m.totalConstructionCr);
+      document.getElementById('section3Badge').textContent = formatCr(m.totalStatutoryCr);
+      document.getElementById('section4Badge').textContent = formatCr(m.totalMemberCompCr);
+
+      // Section 4 Cross-Check Readouts
+      const monthlyRentLakhs = m.monthlyRentTotalINR / 100000;
+      document.getElementById('monthlyRentOutflowHint').textContent = `Monthly outflow: ₹${monthlyRentLakhs.toFixed(2)} Lakhs/mo`;
+      const shiftingLakhsEach = m.shiftingPerMemberINR / 100000;
+      document.getElementById('shiftingPerMemberHint').textContent = `To-and-fro shifting + brokerage per member (₹${shiftingLakhsEach.toFixed(2)} Lakhs / member)`;
+
+      document.getElementById('sec4RentFormulaText').textContent =
+        `1. Transit Rent (${formatNumber(m.memberCompAreaSqft)} sq.ft. × ₹${formatNumber(m.rentPerSqftMonthly)}/sq.ft. × ${m.months} mos × ${(1 + m.rentEscPct / 100).toFixed(2)}):`;
+      document.getElementById('sec4RentTotalCr').textContent = formatCr(m.totalTransitRentCr);
+
+      document.getElementById('sec4CorpusFormulaText').textContent =
+        `2. Corpus Fund (${formatNumber(m.memberCompAreaSqft)} sq.ft. × ₹${formatNumber(m.corpusRatePerSqft)}/sq.ft.):`;
+      document.getElementById('sec4CorpusTotalCr').textContent = formatCr(m.totalCorpusCr);
+
+      document.getElementById('sec4ShiftingFormulaText').textContent =
+        `3. Shifting Charges (${formatNumber(m.members)} members × ${formatINR(m.shiftingPerMemberINR)}/member):`;
+      document.getElementById('sec4ShiftingTotalCr').textContent = formatCr(m.totalShiftingCr);
+
+      const sec4PerSaleCarpet = m.netSaleCarpet > 0 ? (m.totalMemberCompCr * 10000000) / m.netSaleCarpet : 0;
+      document.getElementById('sec4ImpactPerSqft').textContent =
+        `${formatCr(m.totalMemberCompCr)} (${formatINR(sec4PerSaleCarpet)} / Sale Carpet sq.ft.)`;
+      document.getElementById('section5Badge').textContent = formatCr(m.consultantCr + m.marketingCr + m.financeCr + m.customCr + m.contingencyCr);
+
+      // Simulator Readouts
+      document.getElementById('simNetRealizationSqft').textContent = `${formatINR(m.netRealizationCarpetSqft)} / sq.ft.`;
+      document.getElementById('simEquivalentSaleableRate').textContent = `${formatINR(m.equivalentSaleableRate)} / sq.ft.`;
+      document.getElementById('simGrossRevenueCr').textContent = formatCr(m.grossRevenueCr);
+      const simProfitEl = document.getElementById('simNetProfitCr');
+      simProfitEl.textContent = formatCr(m.netProfitCr);
+      simProfitEl.className = `text-sm font-bold ${m.netProfitCr >= 0 ? 'text-emerald-600' : 'text-red-600'}`;
+
+      // Breakdown Table
+      const tbody = document.getElementById('costBreakdownTableBody');
+      tbody.innerHTML = '';
+      m.breakdown.forEach((item) => {
+        const perCarpet = m.netSaleCarpet > 0 ? (item.cr * 10000000) / m.netSaleCarpet : 0;
+        const perSaleable = m.netSaleableArea > 0 ? (item.cr * 10000000) / m.netSaleableArea : 0;
+        const share = m.totalProjectCostCr > 0 ? (item.cr / m.totalProjectCostCr) * 100 : 0;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="py-2 pr-2 flex items-center gap-2 font-medium text-slate-800">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${item.color}"></span>
+            <span>${item.label}</span>
+          </td>
+          <td class="py-2 px-2 text-right">${item.cr.toFixed(2)}</td>
+          <td class="py-2 px-2 text-right font-semibold">${formatINR(perCarpet)}</td>
+          <td class="py-2 px-2 text-right text-slate-500">${formatINR(perSaleable)}</td>
+          <td class="py-2 pl-2 text-right text-slate-500">${share.toFixed(1)}%</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('footTotalCr').textContent = formatCr(m.totalProjectCostCr);
+      document.getElementById('footTotalCarpetSqft').textContent = formatINR(m.costPerCarpetSqft);
+      document.getElementById('footTotalSaleableSqft').textContent = formatINR(m.costPerSaleableSqft);
+
+      // Update Doughnut Chart
+      const labels = m.breakdown.map((b) => b.label);
+      const dataValues = m.breakdown.map((b) => m.netSaleCarpet > 0 ? Math.round((b.cr * 10000000) / m.netSaleCarpet) : 0);
+      const colors = m.breakdown.map((b) => b.color);
+
+      if (!costChart) {
+        const ctx = document.getElementById('costBreakdownChart').getContext('2d');
+        costChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: dataValues,
+              backgroundColor: colors,
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '62%',
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: {
+                  boxWidth: 10,
+                  font: { size: 11, family: 'Inter' }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    return ` ${ctx.label}: ₹${Number(ctx.raw).toLocaleString('en-IN')} / sq.ft.`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      } else {
+        costChart.data.datasets[0].data = dataValues;
+        costChart.update();
+      }
+
+      renderSensitivityTable(m);
+      saveStateToStorage();
+    }
+
+    // Bind Input Controls
+    function bindNumericInputs() {
+      const numericIds = [
+        'plotAreaSqft', 'baseFsi', 'fungibleFsiPct', 'rehabCarpetDirect',
+        'existingCarpetTotal', 'extraAreaOfferPct', 'saleLoadingPct',
+        'rehabConstRate', 'saleConstRate', 'constBuaMultiplier', 'podiumAmenitiesLumpCr',
+        'fsiTdrPremiumCr', 'approvalLiaisonCr', 'stampDutyDaCr', 'extraStatutoryPerSqft',
+        'memberCompCarpetSqft', 'transitRentPerSqftMonthly', 'transitMonths', 'rentEscalationPct',
+        'corpusPerSqft', 'numMembers', 'shiftingPerMemberINR',
+        'consultantFeePct', 'marketingOverheadsCr', 'financeCostCr', 'contingencyPct',
+        'targetSellPriceCarpet', 'gstAndBrokerageOnSalePct'
+      ];
+
+      numericIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = state[id];
+        el.addEventListener('input', (e) => {
+          const val = parseFloat(e.target.value);
+          state[id] = isNaN(val) ? 0 : val;
+          if (id === 'saleLoadingPct') {
+            document.getElementById('saleLoadingPctMember').value = e.target.value;
+          }
+          if (id === 'existingCarpetTotal') {
+            state.memberCompCarpetSqft = state.existingCarpetTotal;
+            const compEl = document.getElementById('memberCompCarpetSqft');
+            if (compEl) compEl.value = e.target.value;
+          }
+          updateUI();
+        });
+      });
+
+      const loadingMemberEl = document.getElementById('saleLoadingPctMember');
+      loadingMemberEl.value = state.saleLoadingPct;
+      loadingMemberEl.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        state.saleLoadingPct = isNaN(val) ? 0 : val;
+        document.getElementById('saleLoadingPct').value = e.target.value;
+        updateUI();
+      });
+    }
+
+    function setRehabMode(mode) {
+      state.rehabMode = mode;
+      const directBtn = document.getElementById('modeRehabDirectBtn');
+      const memberBtn = document.getElementById('modeRehabMemberBtn');
+      const directBox = document.getElementById('rehabDirectContainer');
+      const memberBox = document.getElementById('rehabMemberContainer');
+
+      if (mode === 'direct') {
+        directBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md bg-white text-slate-900 shadow-sm transition';
+        memberBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition';
+        directBox.classList.remove('hidden');
+        memberBox.classList.add('hidden');
+      } else {
+        memberBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md bg-white text-slate-900 shadow-sm transition';
+        directBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition';
+        memberBox.classList.remove('hidden');
+        directBox.classList.add('hidden');
+      }
+      updateUI();
+    }
+
+    const NUMERIC_KEYS = [
+      'plotAreaSqft', 'baseFsi', 'fungibleFsiPct', 'rehabCarpetDirect',
+      'existingCarpetTotal', 'extraAreaOfferPct', 'saleLoadingPct',
+      'rehabConstRate', 'saleConstRate', 'constBuaMultiplier', 'podiumAmenitiesLumpCr',
+      'fsiTdrPremiumCr', 'approvalLiaisonCr', 'stampDutyDaCr', 'extraStatutoryPerSqft',
+      'memberCompCarpetSqft', 'transitRentPerSqftMonthly', 'transitMonths', 'rentEscalationPct',
+      'corpusPerSqft', 'numMembers', 'shiftingPerMemberINR',
+      'consultantFeePct', 'marketingOverheadsCr', 'financeCostCr', 'contingencyPct',
+      'targetSellPriceCarpet', 'gstAndBrokerageOnSalePct'
+    ];
+
+    function loadPersistedAndUrlState() {
+      try {
+        const saved = localStorage.getItem('mumbai_redev_calc_state_v1');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          Object.assign(state, parsed);
+        }
+      } catch (e) {}
+
+      try {
+        const params = new URLSearchParams(window.location.search);
+        NUMERIC_KEYS.forEach((k) => {
+          if (params.has(k)) {
+            const v = parseFloat(params.get(k));
+            if (!isNaN(v)) state[k] = v;
+          }
+        });
+        if (params.get('rehabMode') === 'member' || params.get('rehabMode') === 'direct') {
+          state.rehabMode = params.get('rehabMode');
+        }
+      } catch (e) {}
+    }
+
+    function saveStateToStorage() {
+      try {
+        localStorage.setItem('mumbai_redev_calc_state_v1', JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function buildShareableUrl() {
+      const params = new URLSearchParams();
+      NUMERIC_KEYS.forEach((k) => {
+        params.set(k, state[k]);
+      });
+      params.set('rehabMode', state.rehabMode);
+      const baseUrl = window.location.href.split('?')[0];
+      return `${baseUrl}?${params.toString()}`;
+    }
+
+    // Initialize Event Listeners
+    window.addEventListener('DOMContentLoaded', () => {
+      loadPersistedAndUrlState();
+      bindNumericInputs();
+      setRehabMode(state.rehabMode);
+      renderCustomFactors();
+      renderScenarios();
+      updateUI();
+
+      document.getElementById('modeRehabDirectBtn').addEventListener('click', () => setRehabMode('direct'));
+      document.getElementById('modeRehabMemberBtn').addEventListener('click', () => setRehabMode('member'));
+
+      document.getElementById('btnAddCustomFactor').addEventListener('click', () => {
+        state.customFactors.push({
+          id: 'cf_' + Date.now(),
+          name: 'Additional Project Cost',
+          amountCr: 1.00
+        });
+        renderCustomFactors();
+        updateUI();
+      });
+
+      document.getElementById('btnSaveScenario').addEventListener('click', () => {
+        const m = computeMetrics(state);
+        const idx = state.scenarios.length + 1;
+        state.scenarios.push({
+          name: `Option ${idx} (FSI ${Number(state.baseFsi).toFixed(2)})`,
+          effectiveFsi: m.effectiveFsi,
+          netSaleCarpet: m.netSaleCarpet,
+          totalProjectCostCr: m.totalProjectCostCr,
+          costPerCarpetSqft: m.costPerCarpetSqft
+        });
+        renderScenarios();
+        showToast(`Saved Option ${idx} to comparison table`);
+      });
+
+      document.getElementById('btnClearScenarios').addEventListener('click', () => {
+        state.scenarios = [];
+        renderScenarios();
+        showToast('Cleared saved scenarios');
+      });
+
+      document.getElementById('btnResetDefaults').addEventListener('click', () => {
+        const savedScenarios = state.scenarios || [];
+        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        state.scenarios = savedScenarios;
+        bindNumericInputs();
+        setRehabMode(state.rehabMode);
+        renderCustomFactors();
+        updateUI();
+        showToast('Reset inputs to default baseline');
+      });
+
+      document.getElementById('btnCopySummary').addEventListener('click', () => {
+        const m = computeMetrics(state);
+        const summaryLines = [
+          'MUMBAI REDEVELOPMENT COST PER SQ.FT. SUMMARY',
+          '--------------------------------------------',
+          `Plot Area: ${formatNumber(m.plotArea)} sq.ft.`,
+          `Direct FSI: ${Number(state.baseFsi).toFixed(2)} (+${state.fungibleFsiPct}% Fungible = Effective ${m.effectiveFsi.toFixed(2)})`,
+          `Total Buildable Area: ${formatNumber(m.totalBuildableArea)} sq.ft.`,
+          `Rehab Carpet Area: ${formatNumber(m.rehabCarpet)} sq.ft.`,
+          `Developer Net Sale Carpet Area: ${formatNumber(m.netSaleCarpet)} sq.ft.`,
+          `Developer Saleable Area (+${m.loadingPct}% Loading): ${formatNumber(m.netSaleableArea)} sq.ft.`,
+          '',
+          `TOTAL PROJECT COST: ${formatCr(m.totalProjectCostCr)}`,
+          `BREAKEVEN COST PER SALE CARPET SQ.FT.: ${formatINR(m.costPerCarpetSqft)} / sq.ft.`,
+          `BREAKEVEN COST PER SALEABLE SQ.FT.: ${formatINR(m.costPerSaleableSqft)} / sq.ft.`,
+          '',
+          'COST BREAKDOWN:',
+          ...m.breakdown.map((b) => `- ${b.label}: ${formatCr(b.cr)} (${m.netSaleCarpet > 0 ? formatINR((b.cr * 10000000) / m.netSaleCarpet) : '₹0'}/sq.ft.)`)
+        ].join('\n');
+
+        const ta = document.createElement('textarea');
+        ta.value = summaryLines;
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast('Cost sheet copied to clipboard');
+        } catch (err) {
+          showToast('Could not copy automatically');
+        }
+        document.body.removeChild(ta);
+      });
+
+      document.getElementById('btnExportCsv').addEventListener('click', () => {
+        const m = computeMetrics(state);
+        const rows = [
+          ['Category', 'Total Cost (INR Cr)', 'Cost per Sale Carpet Sq.Ft. (INR)', 'Cost per Saleable Sq.Ft. (INR)', 'Share (%)']
+        ];
+        m.breakdown.forEach((b) => {
+          const perCarpet = m.netSaleCarpet > 0 ? Math.round((b.cr * 10000000) / m.netSaleCarpet) : 0;
+          const perSaleable = m.netSaleableArea > 0 ? Math.round((b.cr * 10000000) / m.netSaleableArea) : 0;
+          const share = m.totalProjectCostCr > 0 ? ((b.cr / m.totalProjectCostCr) * 100).toFixed(2) : '0.00';
+          rows.push([`"${b.label}"`, b.cr.toFixed(2), perCarpet, perSaleable, share]);
+        });
+        rows.push(['"TOTAL PROJECT COST"', m.totalProjectCostCr.toFixed(2), Math.round(m.costPerCarpetSqft), Math.round(m.costPerSaleableSqft), '100.00']);
+
+        const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((r) => r.join(',')).join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'mumbai_redevelopment_cost_sheet.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('Exported CSV cost sheet');
+      });
+
+      document.getElementById('btnShareUrl').addEventListener('click', async () => {
+        const shareUrl = buildShareableUrl();
+        const m = computeMetrics(state);
+        const shareTitle = 'Mumbai Redevelopment Cost Estimate';
+        const shareText = `Cost/Carpet sq.ft.: ${formatINR(m.costPerCarpetSqft)} | Total Cost: ${formatCr(m.totalProjectCostCr)} (FSI ${Number(state.baseFsi).toFixed(2)})`;
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+            showToast('Shared calculator link');
+            return;
+          } catch (e) {}
+        }
+        const ta = document.createElement('textarea');
+        ta.value = shareUrl;
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast('Shareable URL (with current inputs) copied!');
+        } catch (err) {
+          showToast('Could not copy link');
+        }
+        document.body.removeChild(ta);
+      });
+
+      document.getElementById('btnDownloadHtml').addEventListener('click', () => {
+        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'index.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Downloaded index.html ready for web hosting');
+      });
+    });
+  </script>
+
+</body></html>
